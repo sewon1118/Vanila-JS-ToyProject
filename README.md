@@ -7,6 +7,7 @@ Vanila JS Toy Project
 * 후기 및 공부한 점은 깃헙 블로그에 포스팅
 * * *
 ## 프로젝트 목록
+
     1. 숫자야구
     2. Todo 앱
     3. 메모장
@@ -15,5 +16,4 @@ Vanila JS Toy Project
     6. 테트리스
     7. 일정관리
         * Node.js까지 활용해서 Backend까지 가능하다면 구축
-
-    
+        
