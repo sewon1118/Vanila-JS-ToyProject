@@ -9,10 +9,14 @@ h1{
 }
 
 .input-Num{
-    display: block;
+    display: inline-block;
     width: 20rem;
-    height: 2rem;
+    height: 3rem;
+    font-size: 1.5rem;
     border : 2px solid black;
+}
+.first{
+    width: 30%;
     margin: auto;
 }
 
@@ -22,4 +26,12 @@ h1{
     margin: auto;
     margin-top: 3vh;
     border : 3px solid gray;
+    font-weight: bold;
+}
+
+.startBtn{
+    font-size: 1.2rem;
+    background-color: skyblue;
+    display: inline-block;
+    height: 2rem;
 }

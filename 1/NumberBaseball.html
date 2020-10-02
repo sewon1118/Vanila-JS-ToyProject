@@ -12,7 +12,10 @@
 
 <body>
     <h1>숫자야구</h1>
-    <input data-bind="inputNum" type="number" id="inputNum" class="input-Num" placeholder="4자리 숫자를 입력하세요"></input>
+    <div class="first">
+        <input type="number" id="inputNum" class="input-Num" placeholder="4자리 숫자를 입력하세요" disabled></input>
+        <button id="startBtn" class="startBtn">시작</button>
+    </div>
     <container class="result-container">
         <div id="result"></div>
     </container>
