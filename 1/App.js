@@ -42,7 +42,7 @@ restartBtn.onclick = startBtnOnClickListener;
 
 
 input.addEventListener("keyup", (event) => {
-  if (event.keyCode === 13) {
+  if (event.key=== 'Enter') {
     let inputNum = input.value;
     input.value="";
     let res = compare(inputNum, comNum);
@@ -58,5 +58,3 @@ input.addEventListener("keyup", (event) => {
     return false;
   }
 });
-
-//IIFE -> 즉시 함수를 호출하고 싶을때
