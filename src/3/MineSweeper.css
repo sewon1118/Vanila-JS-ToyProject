@@ -1,0 +1,23 @@
+header{
+    text-align: center;
+    margin:auto 0;
+}
+
+section{
+    text-align: center;
+    position : relative;
+}
+
+section table{
+    margin: 0;
+    position: absolute;
+    left : 50%;
+    margin-right: -50%;
+    border-collapse: collapse;
+    transform: translate(-50%,0%);
+}
+
+section table tr td{
+    border: 1px solid black;
+    margin : 0;
+}
