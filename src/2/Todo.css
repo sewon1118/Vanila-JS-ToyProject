@@ -35,3 +35,9 @@ input{
     padding-bottom: 0.5rem;
 }
 
+.result{
+    position: relative;
+    font-size: 1.5rem;
+    left:30%;
+    border : gray solid 1px;
+}
