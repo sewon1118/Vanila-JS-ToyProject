@@ -11,7 +11,7 @@ header{
 nav{
     display: block;
     position : relative;
-    height: 5rem;
+    height: 8rem;
     border-bottom: gray 1px solid;
 }
 
@@ -39,6 +39,17 @@ nav select{
 }
 #heightInput{
     width: 5rem;
+    font-size: 1.5rem;
+}
+#bombInput{
+    width:5rem;
+    font-size:1.5rem;
+}
+
+#game_Info{
+    position: absolute;
+    left :45%;
+    bottom: 20%;
     font-size: 1.5rem;
 }
 
