@@ -11,7 +11,8 @@ let selectLevel;
 let gameData={
   flagCnt : 0,
   bombCnt : 0,
-  time :0
+  time :0,
+  blankCnt:0
 }
 const gameDataProxy = new Proxy(gameData,{
     set : (target,key,value)=>{
@@ -23,7 +24,7 @@ const gameDataProxy = new Proxy(gameData,{
       */
       if(key==="flagCnt")  document.getElementById("flag_data").innerText=`🚩${value}`;
       else if(key==="bombCnt") document.getElementById("bomb_data").innerText=`💣${value}`;
-      else document.getElementById("time_data").innerText=`시간${value}`;
+      else if(key==="time") document.getElementById("time_data").innerText=`시간${value}`;
       target[key]=value;
       return true;
     }
@@ -98,6 +99,7 @@ const createInfo = () => {
   return ret;
 };
 
+// width랑 height를 잘 조절해야 함
 const createGame = (width,height) => {
   let game = elt("table", null);
   // grid의 간격 설정
@@ -109,11 +111,17 @@ const createGame = (width,height) => {
   for (let ypos = 0; ypos < row; ypos++) {
     let row = elt("tr", { height: `${trHegiht}px` });
     for (let xpos = 0; xpos < col; xpos++) {
-      let element = elt(
-        "td",
-        { width: `${trWidth}px` },
-        `${bomb[ypos * col + xpos]}`
-      );
+      let element = elt("td",{ width: `${trWidth}px` });
+      let elementText=elt("div",{id: `${ypos}_${xpos}`},`${bomb[ypos * col + xpos]}`);
+      element.appendChild(elementText);
+      // 우클릭 기본 method 삭제
+      element.addEventListener('contextmenu', (ev)=> {
+        ev.preventDefault();
+        ev.currentTarget.innerText=`🚩`;
+        gameDataProxy.flagCnt--;
+        return false;
+      }, false);
+
       element.addEventListener("click", gridClickListener, false);
       row.appendChild(element);
     }
@@ -141,15 +149,17 @@ const onLevelChange =()=>{
   => 애초에 App을 통해 받아오는 propery들을 data쪽에 입력하는것도 나쁘지 않을듯 (맞는 패턴인지는 모르겠음)
 */
 const onStartBtnClickListener=()=>{
-  setGame();
+  if(!setGame()) return;
   let game = createGame(300, 300);
   document.body.appendChild(elt("section", null, game));
-  document.getElementById('custom_Field').style.visibility="hidden"
+  document.getElementById('custom_Field').style.visibility="hidden";
   document.getElementById('game_Info').style.visibility="visible";
+  playGame();
 }
 // 그리드 클릭 리스너
 const gridClickListener = (e) => {
   e.currentTarget.style.backgroundColor = "white";
+  e.currentTarget.style.visibility="visible";
 };
 
 /*
@@ -174,12 +184,25 @@ const setGame = ()=>{
     row = document.getElementById('rowInput').value;
     col = document.getElementById('heightInput').value;
     gameDataProxy.bombCnt =document.getElementById('bombInput').value;
+    if(row*col<gameDataProxy.bombCnt) {
+      alert("폭탄이 너무 많습니다!");
+      return false;
+    }
   }
   else {
     row=level[selectLevel][0];
     col=level[selectLevel][1];
     gameDataProxy.bombCnt=level[selectLevel][2];
   }
+  gameDataProxy.blankCnt=row*col-gameDataProxy.bombCnt;
   gameDataProxy.flagCnt =gameDataProxy.bombCnt;
+  return true;
 }
 
+// 시간에 따라서 동기적으로 처리 -> callback 함수를 적절히 이용..?
+const playGame =()=>{
+  setInterval(()=>{
+    if(gameDataProxy.flagCnt===gameDataProxy.blankCnt) clearInterval();
+    gameDataProxy.time++;
+  },1000);
+};
