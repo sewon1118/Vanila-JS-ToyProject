@@ -8,7 +8,26 @@ const level={
 }
 let row, col;
 let selectLevel;
-let flagCnt, bombCnt, time;
+let gameData={
+  flagCnt : 0,
+  bombCnt : 0,
+  time :0
+}
+const gameDataProxy = new Proxy(gameData,{
+    set : (target,key,value)=>{
+      /*  
+        이 부분을 훨씬 나이스하게 처리하고 싶다
+        1. 모든 key값에 대하여 if else문으로 처리하지 않음
+        2. 딱 value만 바꾸면 되는데 innerText를 전부 바꿔야하는 문제점
+          => HTML DOM TREE 구조 자체를 바꿔야할 듯
+      */
+      if(key==="flagCnt")  document.getElementById("flag_data").innerText=`🚩${value}`;
+      else if(key==="bombCnt") document.getElementById("bomb_data").innerText=`💣${value}`;
+      else document.getElementById("time_data").innerText=`시간${value}`;
+      target[key]=value;
+      return true;
+    }
+});
 
 // HTML DOM Creation
 const App = (parent) => {
@@ -63,9 +82,9 @@ const createInfo = () => {
 
   // flag 개수, 지뢰 개수 , timer 설정
   let gameInfo = elt("div",{id:"game_Info"});
-  let flag = elt("div",null,`🚩 ${flagCnt}`);
-  let bomb = elt("div",null,`💣 ${bombCnt}`);
-  let timer = elt("div",null,`시간 ${time}`);
+  let flag = elt("div",{id:"flag_data"},`🚩 ${gameDataProxy.flagCnt}`);
+  let bomb = elt("div",{id:"bomb_data"},`💣 ${gameDataProxy.bombCnt}`);
+  let timer = elt("div",{id:"time_data"},`시간 ${gameDataProxy.time}`);
   gameInfo.appendChild(flag);
   gameInfo.appendChild(bomb);
   gameInfo.appendChild(timer);
@@ -85,12 +104,16 @@ const createGame = (width,height) => {
   const trWidth = width / col;
   const trHegiht = height / row;
   // 무작위로 true false가 정해진 갯수만큼 들어있는 배열 가져오기
-  const bomb = createBomb(row, col, bombCnt);
+  const bomb = createBomb(row, col, gameDataProxy.bombCnt);
 
   for (let ypos = 0; ypos < row; ypos++) {
     let row = elt("tr", { height: `${trHegiht}px` });
     for (let xpos = 0; xpos < col; xpos++) {
-      let element = elt("td", { width: `${trWidth}px` });
+      let element = elt(
+        "td",
+        { width: `${trWidth}px` },
+        `${bomb[ypos * col + xpos]}`
+      );
       element.addEventListener("click", gridClickListener, false);
       row.appendChild(element);
     }
@@ -132,8 +155,16 @@ const gridClickListener = (e) => {
 /*
   게임 설정
 */
-const createBomb = (row, col, bombCnt) => {
-  let ret = Array.from(Array(row), () => new Array(col));
+const createBomb = (row, col) => {
+  let ret = new Array();
+  for(let i =0;i<gameDataProxy.bombCnt;i++) ret.push('💣');
+  for(let i=0;i<row*col-gameDataProxy.bombCnt;i++) ret.push(' ');
+  
+  // shuffle
+  for (let i = ret.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [ret[i], ret[j]] = [ret[j], ret[i]];
+  }
   return ret;
 };
 
@@ -142,12 +173,13 @@ const setGame = ()=>{
   if(selectLevel==="사용자 설정"){
     row = document.getElementById('rowInput').value;
     col = document.getElementById('heightInput').value;
-    bombCnt =document.getElementById('bombInput').value;
+    gameDataProxy.bombCnt =document.getElementById('bombInput').value;
   }
   else {
     row=level[selectLevel][0];
     col=level[selectLevel][1];
-    bombCnt=level[selectLevel][2];
+    gameDataProxy.bombCnt=level[selectLevel][2];
   }
+  gameDataProxy.flagCnt =gameDataProxy.bombCnt;
 }
 
