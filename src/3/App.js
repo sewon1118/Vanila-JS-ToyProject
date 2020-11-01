@@ -148,7 +148,6 @@ const createGame = (width, height) => {
   const trHegiht = height / row;
   // 무작위로 true false가 정해진 갯수만큼 들어있는 배열 가져오기
   const bomb = createBomb(row, col, gameDataProxy.bombCnt);
-  console.log(bomb);
   for (let ypos = 0; ypos < row; ypos++) {
     let row = elt("tr", { height: `${trHegiht}px` });
     for (let xpos = 0; xpos < col; xpos++) {
@@ -198,7 +197,6 @@ const onStartBtnClickListener = () => {
 const gridClickListener = (e) => {
   // 한번 클릭했으면 다시 클릭을 못하게 해야함
   if(e.currentTarget.style.backgroundColor==="white") return;
-
   e.currentTarget.style.backgroundColor = "white";
   let text = e.currentTarget.childNodes[0];
   gameDataProxy.blankCnt++;
@@ -223,7 +221,7 @@ const gridClickListener = (e) => {
     if (0 <= ny && ny < row && 0 <= nx && nx < col){
       let nextNode= document.getElementsByClassName(`${ny}_${nx}`)[0];
       nextNode.childNodes[0].style.visibility="visible";
-      if(nextNode.childNodes[0].innerText!='💣') nextNode.dispatchEvent(event);
+      if(nextNode.childNodes[0].innerText!='💣'&& nextNode.style.backgroundColor!="white") nextNode.dispatchEvent(event);
       else nextNode.childNodes[0].style.visibility="hidden";
     }
   }
@@ -248,8 +246,9 @@ const createBomb = () => {
     const j = Math.floor(Math.random() * (i + 1));
     [temp[i], temp[j]] = [temp[j], temp[i]];
   }
-  const ret = Array.from(Array(row), () => new Array(col));
+  let ret = Array.from(Array(row), () => new Array(col));
   // forEach등으로 예쁘게 쓰고싶은데..
+  console.log(ret);
   for(let i=0;i<row;i++){
     for(let j=0;j<col;j++){
       ret[i][j]=temp[i*row+j];
@@ -281,9 +280,9 @@ const DFS = (ypos, xpos) => {};
 const setGame = () => {
   selectLevel = document.getElementById("level_select").value;
   if (selectLevel === "사용자 설정") {
-    row = document.getElementById("rowInput").value;
-    col = document.getElementById("heightInput").value;
-    gameDataProxy.bombCnt = document.getElementById("bombInput").value;
+    row = parseInt(document.getElementById("rowInput").value);
+    col = parseInt(document.getElementById("heightInput").value);
+    gameDataProxy.bombCnt = parseInt(document.getElementById("bombInput").value);
     if (row * col < gameDataProxy.bombCnt) {
       alert("폭탄이 너무 많습니다!");
       return false;
