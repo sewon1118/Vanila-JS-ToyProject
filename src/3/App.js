@@ -200,31 +200,34 @@ const gridClickListener = (e) => {
   e.currentTarget.style.backgroundColor = "white";
   let text = e.currentTarget.childNodes[0];
   gameDataProxy.blankCnt++;
-  text.style.visibility="visible";
-  if(text.innerText=='💣'){
-    alert("지뢰찾기 실패!");
-    return;
-  }
-  // 빈칸을 클릭했을때 퍼져나가는것 구현
   // visiblity가 visible이 아니면 innerText 자체를 가져오지 못함
   // 따라서 일단 visible로 만들고 0일때만 다시 hidden으로 바꾸는 것으로 구현
-  if(text.innerText!='0') return;
-
-  text.style.visibility="hidden"
-  let className=e.currentTarget.className.split('_');
-  let ypos = parseInt(className[0]);
-  let xpos = parseInt(className[1]);
-  let event = document.createEvent("HTMLEvents");
-  event.initEvent("click",false,true);
-  for(let k=0;k<8;k++){
-    let ny= dir[k][0]+ypos, nx=dir[k][1]+xpos;
-    if (0 <= ny && ny < row && 0 <= nx && nx < col){
-      let nextNode= document.getElementsByClassName(`${ny}_${nx}`)[0];
-      nextNode.childNodes[0].style.visibility="visible";
-      if(nextNode.childNodes[0].innerText!='💣'&& nextNode.style.backgroundColor!="white") nextNode.dispatchEvent(event);
-      else nextNode.childNodes[0].style.visibility="hidden";
+  text.style.visibility="visible";
+  if(text.innerText==='💣'){
+    alert('지뢰찾기 실패!')
+    return;
+  }
+  else if(text.innerText==='0'){
+    text.style.visibility="hidden";
+    let className=e.currentTarget.className.split('_');
+    let ypos = parseInt(className[0]);
+    let xpos = parseInt(className[1]);
+    let event = document.createEvent("HTMLEvents");
+    event.initEvent("click",false,true);
+    for(let k=0;k<8;k++){
+      let ny= dir[k][0]+ypos, nx=dir[k][1]+xpos;
+      if (0 <= ny && ny < row && 0 <= nx && nx < col){
+        let nextNode= document.getElementsByClassName(`${ny}_${nx}`)[0];
+        nextNode.childNodes[0].style.visibility="visible";
+        if(nextNode.style.backgroundColor==="white") {
+          if(nextNode.childNodes[0].innerText==='0') nextNode.childNodes[0].style.visibility="hidden";
+          continue;
+        }
+        else if(nextNode.childNodes[0].innerText!='💣') nextNode.dispatchEvent(event); 
+      }
     }
   }
+  else return; 
 };
 
 const gridLeftClickListener = (e) => {
@@ -248,7 +251,6 @@ const createBomb = () => {
   }
   let ret = Array.from(Array(row), () => new Array(col));
   // forEach등으로 예쁘게 쓰고싶은데..
-  console.log(ret);
   for(let i=0;i<row;i++){
     for(let j=0;j<col;j++){
       ret[i][j]=temp[i*row+j];
