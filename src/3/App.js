@@ -1,4 +1,24 @@
 "use strict";
+/*
+  리팩토링 해야하는 사항
+  1. data와 logic의 엄격한 구별
+  2. 게임 패베와 승리에 대한 promise를 이용한 비동기적인 코드 작성
+  3. 필요없고 겹치는 부분 삭제
+  4. 게임 실패시 타이머가 멈춰야함
+
+  삽질 한 부분
+  1. 2차원 배열 생성 부분
+  2. 왼쪽 클릭 리스너 생성 부분
+    => contextmenu 라는 method를 호출해야 했던 것. 클릭에서 분기처리를 하는 것이 아닌
+  3. visibility 부분 
+    => 구현 방법 : childNode를 가져와서 그것의 visiblity를 visible로 만들기
+    => childNode 를 가져오면 Nodelist 형태이므로 배열의 첫번째를 가져오는 형태여야 함
+  4. grid의 id를 가져올려고 함 => 매우 어려움 (addEventListener로 구현하기 어려움)
+    => className으로 가져오면 편함
+    => grid안의 Text를 div 처리한지를 까먹고, Text에 class를 부여했다가 삽질을 했음
+    => 또한 innerText를 ' '로 설정했더니 condition operator가 정상작동하지 않음
+      => innerText를 0으로 설정하고, 0인경우엔 innerText의 visibility를 hidden으로 유지하게 구현
+*/
 // 기본 Data
 const level = {
   초급: [10, 10, 10],
@@ -19,6 +39,10 @@ let dir = [
   [0, -1],
   [1, 0],
   [-1, 0],
+  [1,1],
+  [1,-1],
+  [-1,1],
+  [-1,-1]
 ];
 let visited;
 const gameDataProxy = new Proxy(gameData, {
@@ -124,20 +148,20 @@ const createGame = (width, height) => {
   const trHegiht = height / row;
   // 무작위로 true false가 정해진 갯수만큼 들어있는 배열 가져오기
   const bomb = createBomb(row, col, gameDataProxy.bombCnt);
-
+  console.log(bomb);
   for (let ypos = 0; ypos < row; ypos++) {
     let row = elt("tr", { height: `${trHegiht}px` });
     for (let xpos = 0; xpos < col; xpos++) {
-      let element = elt("td", { width: `${trWidth}px` });
+      let element = elt("td", { width: `${trWidth}px`, class: `${ypos}_${xpos}`});
       let elementText = elt(
         "div",
-        { id: `${ypos}_${xpos}` },
+        null,
         `${bomb[ypos][xpos]}`
       );
+      elementText.style.visibility="hidden";
       element.appendChild(elementText);
-
+      element.addEventListener("click",gridClickListener,false);
       element.addEventListener("contextmenu", gridLeftClickListener, false);
-      element.addEventListener("click", gridClickListener, false);
       row.appendChild(element);
     }
     game.appendChild(row);
@@ -172,9 +196,37 @@ const onStartBtnClickListener = () => {
 };
 // 그리드 클릭 리스너
 const gridClickListener = (e) => {
+  // 한번 클릭했으면 다시 클릭을 못하게 해야함
+  if(e.currentTarget.style.backgroundColor==="white") return;
+
   e.currentTarget.style.backgroundColor = "white";
-  e.currentTarget.style.visibility = "visible";
+  let text = e.currentTarget.childNodes[0];
   gameDataProxy.blankCnt++;
+  text.style.visibility="visible";
+  if(text.innerText=='💣'){
+    alert("지뢰찾기 실패!");
+    return;
+  }
+  // 빈칸을 클릭했을때 퍼져나가는것 구현
+  // visiblity가 visible이 아니면 innerText 자체를 가져오지 못함
+  // 따라서 일단 visible로 만들고 0일때만 다시 hidden으로 바꾸는 것으로 구현
+  if(text.innerText!='0') return;
+
+  text.style.visibility="hidden"
+  let className=e.currentTarget.className.split('_');
+  let ypos = parseInt(className[0]);
+  let xpos = parseInt(className[1]);
+  let event = document.createEvent("HTMLEvents");
+  event.initEvent("click",false,true);
+  for(let k=0;k<8;k++){
+    let ny= dir[k][0]+ypos, nx=dir[k][1]+xpos;
+    if (0 <= ny && ny < row && 0 <= nx && nx < col){
+      let nextNode= document.getElementsByClassName(`${ny}_${nx}`)[0];
+      nextNode.childNodes[0].style.visibility="visible";
+      if(nextNode.childNodes[0].innerText!='💣') nextNode.dispatchEvent(event);
+      else nextNode.childNodes[0].style.visibility="hidden";
+    }
+  }
 };
 
 const gridLeftClickListener = (e) => {
@@ -189,7 +241,7 @@ const gridLeftClickListener = (e) => {
 const createBomb = () => {
   let temp = new Array();
   for (let i = 0; i < gameDataProxy.bombCnt; i++) temp.push("💣");
-  for (let i = 0; i < row * col - gameDataProxy.bombCnt; i++) temp.push(" ");
+  for (let i = 0; i < row * col - gameDataProxy.bombCnt; i++) temp.push("0");
 
   // shuffle
   for (let i = temp.length - 1; i > 0; i--) {
@@ -203,7 +255,6 @@ const createBomb = () => {
       ret[i][j]=temp[i*row+j];
     }
   }
-  console.log(ret);
   processBomb(ret);
   return ret;
 };
@@ -213,13 +264,13 @@ const processBomb = (arr) => {
     for (let j = 0; j < col; j++) {
       if (arr[i][j] === "💣") continue;
       let cnt = 0;
-      for (let k = 0; k < 4; k++) {
+      for (let k = 0; k < 8; k++) {
         let ny = i + dir[k][0],
           nx = j + dir[k][1];
         if (0 <= ny && ny < row && 0 <= nx && nx < col) {
           if (arr[ny][nx] == "💣") cnt++;
         }
-        arr[i][j] = cnt ? `${cnt}` : " ";
+        arr[i][j] = cnt ? `${cnt}` : "0";
       }
     }
 };
