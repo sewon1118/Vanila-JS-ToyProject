@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./MineSweeper.css">
+    <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap" rel="stylesheet">
+    <script defer src="../elt.js"></script>
+    <script defer src="App.js"></script>
+    <script defer>
+        const load =()=> App(document.body);
+        window.onload=load;
+    </script>
+    <title>지뢰찾기</title>
+</head>
+<body>
+    <header id="header">
+        <h1>지뢰찾기</h1>
+    </header>
+    <nav id="nav">
+        <select id="level_select"></select>
+        <button id="startBtn">시작</button>
+    </nav>
+</body>
+</html>

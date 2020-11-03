@@ -18,6 +18,8 @@
     => grid안의 Text를 div 처리한지를 까먹고, Text에 class를 부여했다가 삽질을 했음
     => 또한 innerText를 ' '로 설정했더니 condition operator가 정상작동하지 않음
       => innerText를 0으로 설정하고, 0인경우엔 innerText의 visibility를 hidden으로 유지하게 구현
+  5. js에선 Number의 type밖에 없으므로, integer와 integer를 나눈다고 해서 integer가 나오지 않음
+    => Math.floor() 로 구현
 */
 // 기본 Data
 const level = {
@@ -39,10 +41,10 @@ let dir = [
   [0, -1],
   [1, 0],
   [-1, 0],
-  [1,1],
-  [1,-1],
-  [-1,1],
-  [-1,-1]
+  [1, 1],
+  [1, -1],
+  [-1, 1],
+  [-1, -1],
 ];
 let visited;
 const gameDataProxy = new Proxy(gameData, {
@@ -52,7 +54,7 @@ const gameDataProxy = new Proxy(gameData, {
         1. 모든 key값에 대하여 if else문으로 처리하지 않음
         2. 딱 value만 바꾸면 되는데 innerText를 전부 바꿔야하는 문제점
           => HTML DOM TREE 구조 자체를 바꿔야할 듯
-      */
+    */
     if (key === "flagCnt")
       document.getElementById("flag_data").innerText = `🚩${value}`;
     else if (key === "bombCnt")
@@ -67,12 +69,10 @@ const gameDataProxy = new Proxy(gameData, {
 // HTML DOM Creation
 const App = (parent) => {
   let title = elt("h1", null, "지뢰찾기");
-  let informationBar = createInfo();
-  parent.appendChild(elt("header", null, title));
   let nav = elt("nav", null);
-  informationBar.forEach((value) => {
-    nav.appendChild(value);
-  });
+  let informationBar = createInfo();
+  informationBar.forEach((value) => nav.appendChild(value));
+  parent.appendChild(elt("header", null, title));
   parent.appendChild(nav);
 };
 
@@ -151,15 +151,14 @@ const createGame = (width, height) => {
   for (let ypos = 0; ypos < row; ypos++) {
     let row = elt("tr", { height: `${trHegiht}px` });
     for (let xpos = 0; xpos < col; xpos++) {
-      let element = elt("td", { width: `${trWidth}px`, class: `${ypos}_${xpos}`});
-      let elementText = elt(
-        "div",
-        null,
-        `${bomb[ypos][xpos]}`
-      );
-      elementText.style.visibility="hidden";
+      let element = elt("td", {
+        width: `${trWidth}px`,
+        class: `${ypos}_${xpos}`,
+      });
+      let elementText = elt("div", null, `${bomb[ypos][xpos]}`);
+      elementText.style.visibility = "hidden";
       element.appendChild(elementText);
-      element.addEventListener("click",gridClickListener,false);
+      element.addEventListener("click", gridClickListener, false);
       element.addEventListener("contextmenu", gridLeftClickListener, false);
       row.appendChild(element);
     }
@@ -183,7 +182,7 @@ const onLevelChange = () => {
 /*
   스타트 버튼 리스너
   => 역시 body에 대한 것을 document.getElementbyId로 받아와야하는것이 조금 어려움
-  => 애초에 App을 통해 받아오는 propery들을 data쪽에 입력하는것도 나쁘지 않을듯 (맞는 패턴인지는 모르겠음)
+  => 애초에 App을 통해 받아오는 property들을 data쪽에 입력하는것도 나쁘지 않을듯 (맞는 패턴인지는 모르겠음)
 */
 const onStartBtnClickListener = () => {
   if (!setGame()) return;
@@ -195,39 +194,37 @@ const onStartBtnClickListener = () => {
 };
 // 그리드 클릭 리스너
 const gridClickListener = (e) => {
-  // 한번 클릭했으면 다시 클릭을 못하게 해야함
-  if(e.currentTarget.style.backgroundColor==="white") return;
+  // 한번 클릭했으면 다시 클릭을 못하게 해야함 -> DFS 탈출 조건
+  if (e.currentTarget.style.backgroundColor === "white") return;
   e.currentTarget.style.backgroundColor = "white";
   let text = e.currentTarget.childNodes[0];
   gameDataProxy.blankCnt++;
   // visiblity가 visible이 아니면 innerText 자체를 가져오지 못함
   // 따라서 일단 visible로 만들고 0일때만 다시 hidden으로 바꾸는 것으로 구현
-  text.style.visibility="visible";
-  if(text.innerText==='💣'){
-    alert('지뢰찾기 실패!')
+  text.style.visibility = "visible";
+  if (text.innerText === "💣") {
+    alert("지뢰찾기 실패!");
     return;
-  }
-  else if(text.innerText==='0'){
-    text.style.visibility="hidden";
-    let className=e.currentTarget.className.split('_');
+  } else if (text.innerText === "0") {
+    text.style.visibility = "hidden";
+    let className = e.currentTarget.className.split("_");
     let ypos = parseInt(className[0]);
     let xpos = parseInt(className[1]);
     let event = document.createEvent("HTMLEvents");
-    event.initEvent("click",false,true);
-    for(let k=0;k<8;k++){
-      let ny= dir[k][0]+ypos, nx=dir[k][1]+xpos;
-      if (0 <= ny && ny < row && 0 <= nx && nx < col){
-        let nextNode= document.getElementsByClassName(`${ny}_${nx}`)[0];
-        nextNode.childNodes[0].style.visibility="visible";
-        if(nextNode.style.backgroundColor==="white") {
-          if(nextNode.childNodes[0].innerText==='0') nextNode.childNodes[0].style.visibility="hidden";
-          continue;
-        }
-        else if(nextNode.childNodes[0].innerText!='💣') nextNode.dispatchEvent(event); 
+    event.initEvent("click", false, true);
+    dir.forEach((value) => {
+      let ny = value[0] + ypos,
+        nx = value[1] + xpos;
+      if (0 <= ny && ny < row && 0 <= nx && nx < col) {
+        let nextNode = document.getElementsByClassName(`${ny}_${nx}`)[0];
+        nextNode.childNodes[0].style.visibility = "visible";
+        if (nextNode.childNodes[0].innerText != "💣")
+          nextNode.dispatchEvent(event);
+        if (nextNode.childNodes[0].innerText === "0")
+          nextNode.childNodes[0].style.visibility = "hidden";
       }
-    }
-  }
-  else return; 
+    });
+  } else return;
 };
 
 const gridLeftClickListener = (e) => {
@@ -250,12 +247,7 @@ const createBomb = () => {
     [temp[i], temp[j]] = [temp[j], temp[i]];
   }
   let ret = Array.from(Array(row), () => new Array(col));
-  // forEach등으로 예쁘게 쓰고싶은데..
-  for(let i=0;i<row;i++){
-    for(let j=0;j<col;j++){
-      ret[i][j]=temp[i*row+j];
-    }
-  }
+  temp.forEach((value, idx) => (ret[Math.floor(idx / row)][idx % row] = value));
   processBomb(ret);
   return ret;
 };
@@ -265,26 +257,24 @@ const processBomb = (arr) => {
     for (let j = 0; j < col; j++) {
       if (arr[i][j] === "💣") continue;
       let cnt = 0;
-      for (let k = 0; k < 8; k++) {
-        let ny = i + dir[k][0],
-          nx = j + dir[k][1];
-        if (0 <= ny && ny < row && 0 <= nx && nx < col) {
+      dir.forEach((value) => {
+        let ny = i + value[0],
+          nx = j + value[1];
+        if (0 <= ny && ny < row && 0 <= nx && nx < col)
           if (arr[ny][nx] == "💣") cnt++;
-        }
-        arr[i][j] = cnt ? `${cnt}` : "0";
-      }
+      });
+      arr[i][j] = cnt ? `${cnt}` : "0";
     }
 };
-
-visited = Array.from(Array(row), () => Array(col).fill(false));
-const DFS = (ypos, xpos) => {};
 
 const setGame = () => {
   selectLevel = document.getElementById("level_select").value;
   if (selectLevel === "사용자 설정") {
     row = parseInt(document.getElementById("rowInput").value);
     col = parseInt(document.getElementById("heightInput").value);
-    gameDataProxy.bombCnt = parseInt(document.getElementById("bombInput").value);
+    gameDataProxy.bombCnt = parseInt(
+      document.getElementById("bombInput").value
+    );
     if (row * col < gameDataProxy.bombCnt) {
       alert("폭탄이 너무 많습니다!");
       return false;
