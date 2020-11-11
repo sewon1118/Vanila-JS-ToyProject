@@ -1,0 +1,15 @@
+header{
+    position : relative;
+    text-align: center;
+}
+
+.container{
+    position: relative;
+    display: inline-grid;
+    grid-template-rows: 1fr 1fr;
+}
+
+.container_item{
+    display : inline-block;
+    border : solid 1px black;
+}

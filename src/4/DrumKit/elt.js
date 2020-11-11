@@ -5,7 +5,7 @@ export const elt = (name,attributes,...rest)=>{
         for(let attr in attributes){
             if(attributes.hasOwnProperty(attr)){
                 node.setAttribute(attr,attributes[attr]);
-            }
+            }           
         }
     }
     rest.forEach((value)=>{
