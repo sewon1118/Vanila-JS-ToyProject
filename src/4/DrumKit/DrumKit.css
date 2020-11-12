@@ -5,11 +5,22 @@ header{
 
 .container{
     position: relative;
-    display: inline-grid;
+    display: grid;
     grid-template-rows: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
 }
 
 .container_item{
+    position: relative;
+    padding : 5px;
+    justify-content: center;
     display : inline-block;
+}
+
+.item_text{
+    margin: 0 auto;
+    text-align: center;
+    width: 7rem;
+    height : 7rem;
     border : solid 1px black;
 }

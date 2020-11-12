@@ -27,12 +27,16 @@ const headerElement=()=>{
 const containerElement=()=>{
     let ret = new Array();
     instrument.forEach((value)=>{
-        ret.push(elt("div",{
+        const text = elt("div",{
             id : `${value}`,
-            class : "container_item",
-        },`${value}`))
-    })
-    ret.forEach((value)=>value.addEventListener("click",soundElementCLickListener),false);
+            class : "item_text"
+        },`${value}`);
+        text.addEventListener("click",soundElementCLickListener,false);
+        const item =elt("div",{
+            class : "container_item"
+        },text);
+        ret.push(item);
+    });
     return ret;
 }
 
@@ -45,6 +49,5 @@ const setBackGroundImg=()=>{
 const soundElementCLickListener=(e)=>{
     const id = e.currentTarget.id;
     const curAudio= new Audio(`${sound[id]}`);
-    console.log(curAudio);
     curAudio.play();
 }
