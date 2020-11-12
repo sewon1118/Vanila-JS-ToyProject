@@ -31,7 +31,8 @@ const containerElement=()=>{
             id : `${value}`,
             class : "item_text"
         },`${value}`);
-        text.addEventListener("click",soundElementCLickListener,false);
+        text.addEventListener("click",soundItemClickListener,false);
+        text.addEventListener("transitionend",removeListener,false);
         const item =elt("div",{
             class : "container_item"
         },text);
@@ -46,8 +47,15 @@ const setBackGroundImg=()=>{
 }
 
 // Listener
-const soundElementCLickListener=(e)=>{
-    const id = e.currentTarget.id;
+const soundItemClickListener=(e)=>{
+    const target =e.currentTarget;
+    target.classList.add('playing');
+    const id = target.id;
     const curAudio= new Audio(`${sound[id]}`);
     curAudio.play();
+}
+
+const removeListener=(e)=>{
+    if (e.propertyName !== 'transform') return;
+    e.target.classList.remove('playing');
 }
