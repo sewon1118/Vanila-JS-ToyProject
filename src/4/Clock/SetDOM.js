@@ -1,11 +1,17 @@
 import {elt} from "./elt.js";
 export const setDefault =()=>{
+    const backGrond=elt("div",{
+        class: "back_ground",
+    },);
     const header = elt("header",null);
     const section = elt("section",null);
     headerElement().forEach((value)=>header.appendChild(value));
     sectionElement().forEach((value)=>section.appendChild(value));
-    document.body.appendChild(header);
-    document.body.appendChild(section);
+    const Body=elt("div",{
+        class: "Body"
+    },header,section);
+    document.body.appendChild(backGrond);
+    document.body.appendChild(Body);
 }
 
 const headerElement=()=>{

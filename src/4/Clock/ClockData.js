@@ -14,7 +14,7 @@ const setDigitalClock=(seconds,minutes,hours)=>{
     const digitalClock=document.getElementById('digital_clock');
     let isAM = hours<12 ? "오전" : "오후";
     if(isAM==="오후") hours%=12;
-    digitalClock.innerText=`${hours}시${minutes}분${seconds}초`
+    digitalClock.innerText=`${isAM}${hours}시${minutes}분${seconds}초`
 }   
 
 const setRoundClock=(seconds,minutes,hours)=>{
@@ -22,12 +22,12 @@ const setRoundClock=(seconds,minutes,hours)=>{
     const minHand=document.getElementById('minute_hand');
     const hourHand=document.getElementById('hour_hand');
 
-    const secondsDegrees=((seconds/60)*360)+90;
+    const secondsDegrees=((seconds/60)*360)-90;
     secHand.style.transform=`rotate(${secondsDegrees}deg)`;
 
-    const minsDegrees = ((minutes/60)*360+(seconds/60)*6)+90;
+    const minsDegrees = ((minutes/60)*360+(seconds/60)*6)-90;
     minHand.style.transform=`rotate(${minsDegrees}deg)`;
     
-    const hoursDegrees = ((hours/12)*360+(minutes/60)*30)+90;
+    const hoursDegrees = ((hours/12)*360+(minutes/60)*30)-90;
     hourHand.style.transform=`rotate(${hoursDegrees}deg)`;
 }
